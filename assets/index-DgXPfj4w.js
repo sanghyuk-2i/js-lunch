@@ -327,7 +327,7 @@ const Icon = (props) => {
       "
     >
       <img
-        src="/assets/${name}.png"
+        src="${"/js-lunch/"}assets/${name}.png"
         alt="${name} icon"
         style="
           width: ${_size}px; 
