@@ -35,7 +35,7 @@
     fetch(link.href, fetchOpts);
   }
 })();
-const CATEGORIES = [
+const RESTAURANT_CATEGORIES = [
   {
     label: "전체",
     value: "전체"
@@ -65,7 +65,7 @@ const CATEGORIES = [
     value: "기타"
   }
 ];
-const SORTINGS = [
+const RESTAURANT_SORTINGS = [
   {
     label: "이름순",
     value: "name"
@@ -161,37 +161,37 @@ const createObserver = (initialValue) => {
 const store = createObserver({
   // Bottom Sheet
   isBottomSheetOpen: false,
-  bottomSheetLeftButtonText: "취소",
-  bottomSheetRightButtonText: "확인",
+  bottomSheetLeftButtonText: null,
+  bottomSheetRightButtonText: null,
   bottomSheetContent: null,
   bottomSheetConfirm: null,
   bottomSheetCancel: null,
   // Domains
-  category: CATEGORIES[0].value,
-  sorting: SORTINGS[0].value,
+  category: RESTAURANT_CATEGORIES[0].value,
+  sorting: RESTAURANT_SORTINGS[0].value,
   restaurants: RESTAURANTS
 });
+const BUTTON_SIZES = {
+  lg: 44,
+  md: 36,
+  sm: 30
+};
+const BUTTON_VARIANTS = {
+  primary: {
+    border: "none",
+    background: "var(--primary-color)",
+    color: "var(--grey-100)"
+  },
+  outlined: {
+    border: "1px solid var(--grey-300)",
+    background: "transparent",
+    color: "var(--grey-300)"
+  }
+};
 const Button = (props) => {
-  const { name, size, content, variant } = props;
-  const _size = (() => {
-    if (size === "lg") return 44;
-    if (size === "sm") return 30;
-    return 36;
-  })();
-  const { border, background, color } = (() => {
-    if (variant === "outlined") {
-      return {
-        border: "1px solid var(--grey-300)",
-        background: "transparent",
-        color: "var(--grey-300)"
-      };
-    }
-    return {
-      border: "none",
-      background: "var(--primary-color)",
-      color: "var(--grey-100)"
-    };
-  })();
+  const { name, size = "md", content, variant = "primary" } = props;
+  const _size = BUTTON_SIZES[size];
+  const { border, background, color } = BUTTON_VARIANTS[variant];
   return `
     <button
       id="${name}"
@@ -227,13 +227,13 @@ const BottomSheet = () => {
     name: "bottom-sheet-confirm",
     size: "lg",
     variant: "outlined",
-    content: store.get().bottomSheetLeftButtonText
+    content: store.get().bottomSheetLeftButtonText ?? "확인"
   })}
           ${Button({
     name: "bottom-sheet-cancel",
     size: "lg",
-    variant: "plain",
-    content: store.get().bottomSheetRightButtonText
+    variant: "primary",
+    content: store.get().bottomSheetRightButtonText ?? "취소"
   })}
         </div>
       </div>
@@ -246,8 +246,8 @@ addEvent("click", "#bottom-sheet-confirm", () => {
   store.set({
     ...store.get(),
     isBottomSheetOpen: false,
-    bottomSheetLeftButtonText: "취소",
-    bottomSheetRightButtonText: "확인"
+    bottomSheetLeftButtonText: null,
+    bottomSheetRightButtonText: null
   });
 });
 addEvent("click", "#bottom-sheet-cancel", () => {
@@ -256,11 +256,11 @@ addEvent("click", "#bottom-sheet-cancel", () => {
   store.set({
     ...store.get(),
     isBottomSheetOpen: false,
-    bottomSheetLeftButtonText: "취소",
-    bottomSheetRightButtonText: "확인"
+    bottomSheetLeftButtonText: null,
+    bottomSheetRightButtonText: null
   });
 });
-const Header = () => {
+const MainHeader = () => {
   return `
     <header style="padding: 16px 0; text-align:center; background-color: var(--primary-color)">
       <h1 class="text-title" style="color: var(--grey-100)">점심에는 뭐 먹지</h1>
@@ -304,15 +304,16 @@ const SelectContainer = (props) => {
 const Select = Object.assign(SelectContainer, {
   Item: SelectItem
 });
+const ICON_SIZES = {
+  xl: 36,
+  lg: 32,
+  md: 26,
+  sm: 20,
+  xs: 14
+};
 const Icon = (props) => {
-  const { name, size } = props;
-  const _size = (() => {
-    if (size === "xl") return 36;
-    if (size === "lg") return 32;
-    if (size === "sm") return 20;
-    if (size === "xs") return 14;
-    return 26;
-  })();
+  const { name, size = "md" } = props;
+  const _size = ICON_SIZES[size];
   return `
     <div 
       style="
@@ -402,13 +403,13 @@ const Home = () => {
       <div style="width: 100%; display:flex; justify-content: space-between;">
         ${Select({
     name: "category",
-    children: () => CATEGORIES.map(
+    children: () => RESTAURANT_CATEGORIES.map(
       (props) => Select.Item({ ...props, selected: props.value === category })
     ).join("")
   })}
         ${Select({
     name: "sorting",
-    children: () => SORTINGS.map(
+    children: () => RESTAURANT_SORTINGS.map(
       (props) => Select.Item({ ...props, selected: props.value === sorting })
     ).join("")
   })}        
@@ -450,7 +451,7 @@ addEvent("change", `#sorting`, (event) => {
   });
 });
 const App = () => {
-  return ` ${Header()} ${Home()} ${BottomSheet()}`;
+  return ` ${MainHeader()} ${Home()} ${BottomSheet()}`;
 };
 initializeEventManager();
 console.log("npm run dev 명령어를 통해 점심 뭐 먹지 미션을 시작하세요");
