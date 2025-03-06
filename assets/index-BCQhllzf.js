@@ -35,7 +35,7 @@
     fetch(link.href, fetchOpts);
   }
 })();
-const storage = {
+const sessionStorageUtil = {
   get: (key, defaultValue = null) => {
     try {
       const item = sessionStorage.getItem(key);
@@ -104,14 +104,14 @@ const createObserver = (initialValue, options = { enableStorage: false }) => {
     value = newValue;
     if (options.enableStorage) {
       for (const [key, objectValue] of Object.entries(value)) {
-        storage.update(key, objectValue);
+        sessionStorageUtil.update(key, objectValue);
       }
     }
     notify();
   };
   return { subscribe, unsubscribe, get, set };
 };
-const globalStore = createObserver({
+const bottomSheetStore = createObserver({
   // Bottom Sheet
   isBottomSheetOpen: false,
   bottomSheetLeftButtonText: null,
@@ -164,25 +164,31 @@ const Backdrop = () => {
   `;
 };
 const BottomSheet = () => {
-  const open = globalStore.get().isBottomSheetOpen ? "modal--open" : "";
+  const {
+    isBottomSheetOpen,
+    bottomSheetContent,
+    bottomSheetLeftButtonText,
+    bottomSheetRightButtonText
+  } = bottomSheetStore.get();
+  const open = isBottomSheetOpen ? "modal--open" : "";
   return `
     <div class="modal ${open}">
       ${Backdrop()}
       <div class="modal-container" style="max-height: 90%;">
-        ${globalStore.get().bottomSheetContent}
+        ${bottomSheetContent}
         
         <div class="button-container" style="margin-top: 16px; gap: 8px;">
           ${Button({
     name: "bottom-sheet-confirm",
     size: "lg",
     variant: "outlined",
-    content: globalStore.get().bottomSheetLeftButtonText ?? "확인"
+    content: bottomSheetLeftButtonText ?? "확인"
   })}
           ${Button({
     name: "bottom-sheet-cancel",
     size: "lg",
     variant: "primary",
-    content: globalStore.get().bottomSheetRightButtonText ?? "취소"
+    content: bottomSheetRightButtonText ?? "취소"
   })}
         </div>
       </div>
@@ -191,9 +197,9 @@ const BottomSheet = () => {
 };
 addEvent("click", "#bottom-sheet-confirm", () => {
   var _a, _b;
-  (_b = (_a = globalStore.get()).bottomSheetConfirm) == null ? void 0 : _b.call(_a);
-  globalStore.set({
-    ...globalStore.get(),
+  (_b = (_a = bottomSheetStore.get()).bottomSheetConfirm) == null ? void 0 : _b.call(_a);
+  bottomSheetStore.set({
+    ...bottomSheetStore.get(),
     isBottomSheetOpen: false,
     bottomSheetLeftButtonText: null,
     bottomSheetRightButtonText: null
@@ -201,9 +207,9 @@ addEvent("click", "#bottom-sheet-confirm", () => {
 });
 addEvent("click", "#bottom-sheet-cancel", () => {
   var _a, _b;
-  (_b = (_a = globalStore.get()).bottomSheetCancel) == null ? void 0 : _b.call(_a);
-  globalStore.set({
-    ...globalStore.get(),
+  (_b = (_a = bottomSheetStore.get()).bottomSheetCancel) == null ? void 0 : _b.call(_a);
+  bottomSheetStore.set({
+    ...bottomSheetStore.get(),
     isBottomSheetOpen: false,
     bottomSheetLeftButtonText: null,
     bottomSheetRightButtonText: null
@@ -321,7 +327,7 @@ const Textarea = (props) => {
     required
   } = props;
   const width = "width: 100%;";
-  const _placeholder = placeholder ? `placeholder: ${placeholder}` : "";
+  const _placeholder = placeholder ? `placeholder=${placeholder}` : "";
   return `
     <div style="display: flex; flex-direction: column; gap: 8px;">
       ${label ? Label({ name, content: label, required }) : ""}
@@ -338,6 +344,7 @@ const Textarea = (props) => {
 };
 const RESTAURANTS = [
   {
+    id: "1",
     icon: { name: "category-korean", alt: "한식" },
     category: "KOREAN",
     name: "피양콩할마니",
@@ -345,6 +352,7 @@ const RESTAURANTS = [
     description: "평양 출신의 할머니가 수십 년간 운영해온 비지 전문점 피양콩 할마니. 두부를 빼지 않은 되비지를 맛볼 수 있는 곳으로, ‘피양’은 평안도 사투리로 ‘평양’을 의미한다. 딸과 함께 운영하는 이곳에선 맷돌로 직접 간 콩만을 사용하며, 일체의 조미료를 넣지 않은 건강식을 선보인다. 콩비지와 피양 만두가 이곳의 대표 메뉴지만, 할머니가 옛날 방식을 고수하며 만들어내는 비지전골 또한 이 집의 역사를 느낄 수 있는 특별한 메뉴다. 반찬은 손님들이 먹고 싶은 만큼 덜어 먹을 수 있게 준비돼 있다."
   },
   {
+    id: "2",
     icon: { name: "category-chinese", alt: "중식" },
     category: "CHINESE",
     name: "친친",
@@ -352,6 +360,7 @@ const RESTAURANTS = [
     description: "Since 2004 편리한 교통과 주차, 그리고 관록만큼 깊은 맛과 정성으로 정통 중식의 세계를 펼쳐갑니다."
   },
   {
+    id: "3",
     icon: { name: "category-japanese", alt: "일식" },
     category: "JAPANESE",
     name: "잇쇼우",
@@ -359,6 +368,7 @@ const RESTAURANTS = [
     description: "잇쇼우는 정통 자가제면 사누끼 우동이 대표메뉴입니다. 기술은 정성을 이길 수 없다는 신념으로 모든 음식에 최선을 다하는 잇쇼우는 고객 한분 한분께 최선을 다하겠습니다."
   },
   {
+    id: "4",
     icon: { name: "category-western", alt: "양식" },
     category: "WESTERN",
     name: "이태리키친",
@@ -366,6 +376,7 @@ const RESTAURANTS = [
     description: "늘 변화를 추구하는 이태리키친입니다."
   },
   {
+    id: "5",
     icon: { name: "category-asian", alt: "아시안" },
     category: "ASIAN",
     name: "호아빈 삼성점",
@@ -373,6 +384,7 @@ const RESTAURANTS = [
     description: "푸짐한 양에 국물이 일품인 쌀국수."
   },
   {
+    id: "6",
     icon: { name: "category-etc", alt: "기타" },
     category: "ETC",
     name: "도스타코스 선릉점",
@@ -448,6 +460,10 @@ const RESTAURANT_DISTANCES = [
     value: 30
   }
 ];
+const RESTAURANT_TABS = [
+  { label: "모든 음식점", value: "ALL_TAB" },
+  { label: "자주 가는 음식점", value: "FAVORITE_TAB" }
+];
 const initializeLocalStore = () => ({
   category: "ALL",
   distance: 5
@@ -516,9 +532,19 @@ addEvent("change", `#distance`, (event) => {
 const restaurantStore = createObserver(
   {
     // Domains
-    category: storage.get("category", RESTAURANT_CATEGORIES[0].value),
-    sorting: storage.get("sorting", RESTAURANT_SORTINGS[0].value),
-    restaurants: storage.get("restaurants", RESTAURANTS)
+    category: sessionStorageUtil.get(
+      "category",
+      RESTAURANT_CATEGORIES[0].value
+    ),
+    sorting: sessionStorageUtil.get("sorting", RESTAURANT_SORTINGS[0].value),
+    restaurants: sessionStorageUtil.get("restaurants", RESTAURANTS),
+    favorites: sessionStorageUtil.get("favorites", []),
+    // Tabs
+    activeTab: sessionStorageUtil.get("activeTab", "ALL_TAB"),
+    filteredRestaurants: sessionStorageUtil.get(
+      "filteredRestaurants",
+      RESTAURANTS
+    )
   },
   { enableStorage: true }
 );
@@ -571,8 +597,8 @@ addEvent("click", `#add-button_icon`, (event) => {
       alert(reason);
     }
   };
-  globalStore.set({
-    ...globalStore.get(),
+  bottomSheetStore.set({
+    ...bottomSheetStore.get(),
     isBottomSheetOpen: true,
     bottomSheetLeftButtonText: "취소",
     bottomSheetRightButtonText: "등록하기",
@@ -588,15 +614,82 @@ const List = (props) => {
     </div>
   `;
 };
-const RestaurantInfo = (props) => {
-  const { icon, name, distance, description, link } = props;
+const Tabs = (props) => {
+  const { tabs = [], activeTab, fullWidth } = props;
+  const width = fullWidth ? "width: 100%;" : "";
   return `
-    <div style="display: flex; flex-direction: column; justify-content: flex-start; gap: 16px;">
+    <div style="display: flex; gap: 8px; ${width}">
+      ${tabs.map(
+    (tab) => `
+          <button
+            class="tab_button" 
+            style="
+              flex: 1;
+              height: 36px;
+              padding: 4px;
+              border: none;
+              border-bottom: 2px solid ${activeTab === tab.value ? "var(--primary-color)" : "var(--grey-200)"};
+              background: transparent;
+              font-size: 16px;
+              cursor: pointer;
+              color: ${activeTab === tab.value ? "var(--primary-color)" : "var(--grey-500)"};
+            "
+            data-value="${tab.value}"
+          >
+            ${tab.label}
+          </button>
+        `
+  ).join("")}
+    </div>
+  `;
+};
+const RestaurantFavorite = (props) => {
+  const { id, checked = false } = props;
+  return `
+    <div id="favorite-icon-container" data-id="${id}">
+      ${checked ? Icon({
+    name: "favorite-icon-filled",
+    size: "md",
+    removeBackground: true
+  }) : ""}
+      ${!checked ? Icon({
+    name: "favorite-icon-lined",
+    size: "md",
+    removeBackground: true
+  }) : ""}
+    </div>
+  `;
+};
+addEvent("click", "#favorite-icon-container", (event) => {
+  const iconContainerElement = event.target.parentElement.parentElement;
+  const { id } = iconContainerElement.dataset;
+  const { favorites } = restaurantStore.get();
+  const isChecked = favorites.some((favoriteId) => favoriteId === id);
+  const updatedFavorites = isChecked ? favorites.filter((favoriteId) => favoriteId !== id) : [...favorites, id];
+  restaurantStore.set({
+    ...restaurantStore.get(),
+    favorites: updatedFavorites
+  });
+});
+const RestaurantInfo = (props) => {
+  const { id, icon, name, distance, description, checked, link } = props;
+  return `
+    <div
+      style="display: flex; flex-direction: column; justify-content: flex-start; gap: 16px;"
+    >
       ${Icon({ ...icon, size: "lg" })}
 
       <div style="display: flex; flex-direction: column; gap: 14px;">
-        <h4 class="text-title">${name}</h4>
-        <span class="text-subtitle" style="color: var(--primary-color);">캠퍼스로부터 ${distance}분 거리</span>
+        <div style="display: flex; justify-content: space-between;">
+          <div>
+            <h4 class="text-title">${name}</h4>
+            <span class="text-subtitle" style="color: var(--primary-color);"
+              >캠퍼스로부터 ${distance}분 거리</span
+            >
+          </div>
+
+          ${RestaurantFavorite({ id, checked })}
+        </div>
         <p class="text-body">${description}</p>
         ${link ? `<a href="${link}">${link}</a>` : ""}
       </div>
@@ -604,21 +697,25 @@ const RestaurantInfo = (props) => {
   `;
 };
 const RestaurantItem = (props) => {
-  const { icon, name, distance, description } = props;
+  const { id, icon, name, distance, description } = props;
+  const { favorites } = restaurantStore.get();
   const json = JSON.stringify(props);
+  const isChecked = favorites.some((favoriteId) => favoriteId === id);
   return `
-    <div
-      class="restaurant"
-      style="gap: 16px;"
-      data-json='${json}'
-    >
+    <div class="restaurant" style="gap: 16px;" data-json='${json}'>
       ${Icon({ ...icon, size: "lg" })}
 
-      <div class="restaurant__info">
-        <h4 class="restaurant__name">${name}</h4>
-        <span class="restaurant__distance"
-          >캠퍼스로부터 ${distance}분 거리</span
-        >
+      <div class="restaurant__info" style="flex: 1;">
+        <div style="display: flex; justify-content: space-between;">
+          <div>
+            <h4 class="restaurant__name">${name}</h4>
+            <span class="restaurant__distance"
+              >캠퍼스로부터 ${distance}분 거리</span
+            >
+          </div>
+
+          ${RestaurantFavorite({ id, checked: isChecked })}
+        </div>
         <p class="restaurant__description">${description}</p>
       </div>
     </div>
@@ -630,26 +727,33 @@ addEvent("click", ".restaurant", (event) => {
   const { json } = restaurantElement.dataset;
   if (!json) return;
   const props = JSON.parse(json);
+  const { restaurants, favorites } = restaurantStore.get();
+  const checked = favorites.some((id) => id === props.id);
   const handleDelete = () => {
-    const removed = restaurantStore.get().restaurants.filter(({ name }) => props.name !== name);
+    const removed = restaurants.filter(({ name }) => props.name !== name);
     restaurantStore.set({
       ...restaurantStore.get(),
       restaurants: removed
     });
   };
-  globalStore.set({
-    ...globalStore.get(),
+  bottomSheetStore.set({
+    ...bottomSheetStore.get(),
     isBottomSheetOpen: true,
     bottomSheetLeftButtonText: "삭제하기",
     bottomSheetRightButtonText: "닫기",
-    bottomSheetContent: RestaurantInfo(props),
+    bottomSheetContent: RestaurantInfo({ ...props, checked }),
     bottomSheetConfirm: handleDelete
   });
 });
 const Home = () => {
-  const { category, sorting, restaurants } = restaurantStore.get();
+  const { category, sorting, filteredRestaurants, activeTab } = restaurantStore.get();
   return `
     <section id="home-container" style="padding: 20px 16px; display: flex; flex-direction: column; flex: 1; gap: 16px;">
+      ${Tabs({
+    tabs: RESTAURANT_TABS,
+    activeTab
+  })}
+
       <div style="width: 100%; display:flex; justify-content: space-between;">
         ${Select({
     name: "category_filter",
@@ -666,7 +770,7 @@ const Home = () => {
       </div>
       
       ${List({
-    children: () => restaurants.map((props) => RestaurantItem(props)).join("")
+    children: () => filteredRestaurants.map((props) => RestaurantItem(props)).join("")
   })}
     </section>
   `;
@@ -680,13 +784,31 @@ const render$1 = () => {
   oldContainer.replaceWith(newContainer);
 };
 restaurantStore.subscribe(render$1);
+addEvent("click", ".tab_button", (event) => {
+  const { value } = event.target.dataset;
+  const previousStore = restaurantStore.get();
+  if (previousStore.activeTab === value) return;
+  const filteredRestaurants = (() => {
+    if (value === "FAVORITE_TAB")
+      return previousStore.restaurants.filter(
+        ({ id }) => previousStore.favorites.includes(id)
+      );
+    return previousStore.restaurants;
+  })();
+  restaurantStore.set({
+    ...previousStore,
+    activeTab: value,
+    filteredRestaurants
+  });
+});
 addEvent("change", `#category_filter`, (event) => {
   event.preventDefault();
   const selectedCategory = event.target.value;
+  const previousStore = restaurantStore.get();
   restaurantStore.set({
     ...restaurantStore.get(),
     category: selectedCategory,
-    restaurants: RESTAURANTS.filter(
+    filteredRestaurants: previousStore.restaurants.filter(
       ({ category }) => category === selectedCategory || selectedCategory === "ALL"
     )
   });
@@ -713,6 +835,7 @@ const App = () => {
   return ` ${MainHeader()} ${Home()} ${BottomSheet()}`;
 };
 initializeEventManager();
+const globalStore = createObserver({});
 console.log("npm run dev 명령어를 통해 점심 뭐 먹지 미션을 시작하세요");
 console.log(
   "%c ___       ___  ___  ________   ________  ___  ___     \n|\\  \\     |\\  \\|\\  \\|\\   ___  \\|\\   ____\\|\\  \\|\\  \\    \n\\ \\  \\    \\ \\  \\\\\\  \\ \\  \\\\ \\  \\ \\  \\___|\\ \\  \\\\\\  \\   \n \\ \\  \\    \\ \\  \\\\\\  \\ \\  \\\\ \\  \\ \\  \\    \\ \\   __  \\  \n  \\ \\  \\____\\ \\  \\\\\\  \\ \\  \\\\ \\  \\ \\  \\____\\ \\  \\ \\  \\ \n   \\ \\_______\\ \\_______\\ \\__\\\\ \\__\\ \\_______\\ \\__\\ \\__\\\n    \\|_______|\\|_______|\\|__| \\|__|\\|_______|\\|__|\\|__|",
@@ -726,3 +849,4 @@ const render = () => {
 };
 render();
 globalStore.subscribe(render);
+bottomSheetStore.subscribe(render);
