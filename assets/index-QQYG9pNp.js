@@ -646,7 +646,7 @@ const Tabs = (props) => {
 const RestaurantFavorite = (props) => {
   const { id, checked = false } = props;
   return `
-    <div id="favorite-icon-container" data-id="${id}">
+    <div class="favorite-icon-container" data-id="${id}">
       ${checked ? Icon({
     name: "favorite-icon-filled",
     size: "md",
@@ -660,7 +660,7 @@ const RestaurantFavorite = (props) => {
     </div>
   `;
 };
-addEvent("click", "#favorite-icon-container", (event) => {
+addEvent("click", ".favorite-icon-container", (event) => {
   const iconContainerElement = event.target.parentElement.parentElement;
   const { id } = iconContainerElement.dataset;
   const { favorites } = restaurantStore.get();
@@ -702,7 +702,7 @@ const RestaurantItem = (props) => {
   const json = JSON.stringify(props);
   const isChecked = favorites.some((favoriteId) => favoriteId === id);
   return `
-    <div class="restaurant" style="gap: 16px;" data-json='${json}'>
+    <div class="restaurant" style="gap: 16px;" data-id="${id}" data-json='${json}'>
       ${Icon({ ...icon, size: "lg" })}
 
       <div class="restaurant__info" style="flex: 1;">
